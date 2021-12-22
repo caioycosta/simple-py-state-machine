@@ -1,24 +1,29 @@
-# simple ND (depth-first) state machine
+# simple NFA (depth-first) state machine
 class State(object):
     def __init__(self, action, id="no-id"):
         self.id = id
         self.action = action
         self.transitions = []
-        self._e = []
+        self._e = []        
     
     def transition(self, condition_evaluator, next):
         self._e.append(self)
         while len(self._e):                
             self._e.pop().transitions.append( (condition_evaluator, next) )
-        
-    def start(self):
+    
+    # previous_states var enables inspection of the entire execution history
+    def start(self, previous_states=None):
         self.action()
+        if previous_states=None:
+            previous_states=[]
+        else:
+            previous_states=previous_states[:]+[self]
         next_states = []
         for t in self.transitions:            
             if t[0]():                
                 next_states.append(t[1])
         for p in next_states:
-            p.start()
+            p.start(previous_states)
     
     # used to combine transitions to be the same 
     def and_(self, est):
